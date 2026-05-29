@@ -1,18 +1,19 @@
 using GlobalGo.Application.Interfaces;
 using GlobalGo.Domain.Entities;
+using GlobalGo.Infrastructure.Integrations.Bureaus.Contracts;
 
-namespace GlobalGo.Infrastructure.Bureaus;
+namespace GlobalGo.Infrastructure.Integrations.Bureaus.Providers;
 
-public sealed class SimulatedEquifaxClient : ICreditSourceProvider
+public sealed class SimulatedReniecClient : ICreditSourceProvider
 {
     private readonly ISimulatedBureauApiGateway _apiGateway;
 
-    public SimulatedEquifaxClient(ISimulatedBureauApiGateway apiGateway)
+    public SimulatedReniecClient(ISimulatedBureauApiGateway apiGateway)
     {
         _apiGateway = apiGateway;
     }
 
-    public string SourceCode => CreditSourceCodes.Equifax;
+    public string SourceCode => CreditSourceCodes.Reniec;
 
     public async Task<object> GetReportAsync(CreditSourceContext context, CancellationToken cancellationToken = default)
     {
@@ -21,10 +22,9 @@ public sealed class SimulatedEquifaxClient : ICreditSourceProvider
             context,
             seed =>
             {
-                var score = 350 + (seed % 551);
-                var latePayments = seed % 6;
-                var hasDelinquency = latePayments >= 3;
-                return new EquifaxReport(score, hasDelinquency, latePayments);
+                var identityValid = (seed % 20) != 0;
+                var isDeceased = (seed % 97) == 0;
+                return new ReniecReport(identityValid, isDeceased);
             },
             cancellationToken);
 

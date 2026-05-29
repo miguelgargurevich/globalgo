@@ -1,4 +1,4 @@
-namespace GlobalGo.Infrastructure.Bureaus;
+namespace GlobalGo.Infrastructure.Integrations.Bureaus.Gateway;
 
 internal static class SimulatedBureauSeed
 {

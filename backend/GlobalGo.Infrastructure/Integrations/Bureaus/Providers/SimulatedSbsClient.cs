@@ -1,7 +1,8 @@
 using GlobalGo.Application.Interfaces;
 using GlobalGo.Domain.Entities;
+using GlobalGo.Infrastructure.Integrations.Bureaus.Contracts;
 
-namespace GlobalGo.Infrastructure.Bureaus;
+namespace GlobalGo.Infrastructure.Integrations.Bureaus.Providers;
 
 public sealed class SimulatedSbsClient : ICreditSourceProvider
 {

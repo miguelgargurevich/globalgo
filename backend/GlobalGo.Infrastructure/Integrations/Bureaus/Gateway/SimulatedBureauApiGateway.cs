@@ -1,8 +1,9 @@
 using GlobalGo.Application.Interfaces;
+using GlobalGo.Infrastructure.Integrations.Bureaus.Contracts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace GlobalGo.Infrastructure.Bureaus;
+namespace GlobalGo.Infrastructure.Integrations.Bureaus.Gateway;
 
 public sealed class SimulatedBureauApiGateway : ISimulatedBureauApiGateway
 {

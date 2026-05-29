@@ -47,6 +47,27 @@ public sealed record CustomerHistoryItemModel(
     string Justification,
     bool ReusedRecentEvaluation);
 
+public sealed record GeneralHistoryFilterModel
+{
+    public string? Dni { get; init; }
+    public CreditDecisionStatus? Decision { get; init; }
+    public DateTime? FromUtc { get; init; }
+    public DateTime? ToUtc { get; init; }
+    public decimal? MinAmount { get; init; }
+    public decimal? MaxAmount { get; init; }
+}
+
+public sealed record GeneralHistoryItemModel(
+    Guid EvaluationId,
+    DateTime CreatedAtUtc,
+    string Dni,
+    string FullName,
+    decimal AmountRequested,
+    decimal MonthlyIncome,
+    CreditDecisionStatus Decision,
+    string Justification,
+    bool ReusedRecentEvaluation);
+
 public sealed record PortfolioStateSummaryModel(
     CreditDecisionStatus Status,
     int Count,
@@ -101,6 +122,27 @@ public static class CreditEvaluationMappings
             response.EvaluationId,
             response.CreatedAtUtc,
             response.AmountRequested,
+            response.Decision,
+            response.Justification,
+            response.ReusedRecentEvaluation);
+
+    public static GeneralHistoryFilterRequest ToApplication(this GeneralHistoryFilterModel model)
+        => new(
+            model.Dni,
+            model.Decision,
+            model.FromUtc,
+            model.ToUtc,
+            model.MinAmount,
+            model.MaxAmount);
+
+    public static GeneralHistoryItemModel ToApi(this GeneralHistoryItemResponse response)
+        => new(
+            response.EvaluationId,
+            response.CreatedAtUtc,
+            response.Dni,
+            response.FullName,
+            response.AmountRequested,
+            response.MonthlyIncome,
             response.Decision,
             response.Justification,
             response.ReusedRecentEvaluation);

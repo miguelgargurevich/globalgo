@@ -82,6 +82,59 @@ public sealed class CreditEvaluationService : ICreditEvaluationService
             .ToList();
     }
 
+    public async Task<IReadOnlyList<GeneralHistoryItemResponse>> GetGeneralHistoryAsync(
+        GeneralHistoryFilterRequest filter,
+        CancellationToken cancellationToken = default)
+    {
+        var history = await _repository.GetAllAsync(cancellationToken);
+
+        var query = history.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(filter.Dni))
+        {
+            query = query.Where(x => x.ApplicantDni.Contains(filter.Dni.Trim(), StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (filter.Decision is not null)
+        {
+            query = query.Where(x => x.Decision == filter.Decision);
+        }
+
+        if (filter.FromUtc is not null)
+        {
+            query = query.Where(x => x.CreatedAtUtc >= filter.FromUtc.Value);
+        }
+
+        if (filter.ToUtc is not null)
+        {
+            query = query.Where(x => x.CreatedAtUtc <= filter.ToUtc.Value);
+        }
+
+        if (filter.MinAmount is not null)
+        {
+            query = query.Where(x => x.AmountRequested >= filter.MinAmount.Value);
+        }
+
+        if (filter.MaxAmount is not null)
+        {
+            query = query.Where(x => x.AmountRequested <= filter.MaxAmount.Value);
+        }
+
+        return query
+            .OrderByDescending(x => x.CreatedAtUtc)
+            .Select(x => new GeneralHistoryItemResponse(
+                x.Id,
+                x.CreatedAtUtc,
+                x.ApplicantDni,
+                x.ApplicantFullName,
+                x.AmountRequested,
+                x.MonthlyIncome,
+                x.Decision,
+                x.Justification,
+                x.ReusedRecentEvaluation))
+            .ToList();
+    }
+
     public async Task<PortfolioRiskReportResponse> GetPortfolioRiskReportAsync(CancellationToken cancellationToken = default)
     {
         var evaluations = await _repository.GetAllAsync(cancellationToken);

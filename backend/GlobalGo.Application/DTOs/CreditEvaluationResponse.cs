@@ -25,6 +25,25 @@ public sealed record CustomerHistoryItemResponse(
     string Justification,
     bool ReusedRecentEvaluation);
 
+public sealed record GeneralHistoryFilterRequest(
+    string? Dni,
+    CreditDecisionStatus? Decision,
+    DateTime? FromUtc,
+    DateTime? ToUtc,
+    decimal? MinAmount,
+    decimal? MaxAmount);
+
+public sealed record GeneralHistoryItemResponse(
+    Guid EvaluationId,
+    DateTime CreatedAtUtc,
+    string Dni,
+    string FullName,
+    decimal AmountRequested,
+    decimal MonthlyIncome,
+    CreditDecisionStatus Decision,
+    string Justification,
+    bool ReusedRecentEvaluation);
+
 public sealed record PortfolioStateSummary(
     CreditDecisionStatus Status,
     int Count,

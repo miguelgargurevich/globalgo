@@ -1,6 +1,6 @@
 using GlobalGo.Application.Interfaces;
 
-namespace GlobalGo.Infrastructure.Bureaus;
+namespace GlobalGo.Infrastructure.Integrations.Bureaus.Contracts;
 
 public interface ISimulatedBureauApiGateway
 {

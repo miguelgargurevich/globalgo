@@ -25,4 +25,14 @@ public sealed class CreditEvaluationsController : ControllerBase
         var result = await _service.EvaluateAsync(request.ToApplication(), cancellationToken);
         return Ok(result.ToApi());
     }
+
+    [HttpGet("history")]
+    [ProducesResponseType(typeof(IReadOnlyList<GeneralHistoryItemModel>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<GeneralHistoryItemModel>>> GetGeneralHistory(
+        [FromQuery] GeneralHistoryFilterModel filter,
+        CancellationToken cancellationToken)
+    {
+        var result = await _service.GetGeneralHistoryAsync(filter.ToApplication(), cancellationToken);
+        return Ok(result.Select(x => x.ToApi()).ToList());
+    }
 }

@@ -1,5 +1,7 @@
 using GlobalGo.Application.Interfaces;
-using GlobalGo.Infrastructure.Bureaus;
+using GlobalGo.Infrastructure.Integrations.Bureaus.Contracts;
+using GlobalGo.Infrastructure.Integrations.Bureaus.Gateway;
+using GlobalGo.Infrastructure.Integrations.Bureaus.Providers;
 using GlobalGo.Infrastructure.Persistence;
 using GlobalGo.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
