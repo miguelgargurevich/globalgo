@@ -45,7 +45,10 @@ public sealed record CustomerHistoryItemModel(
     decimal AmountRequested,
     CreditDecisionStatus Decision,
     string Justification,
-    bool ReusedRecentEvaluation);
+    bool ReusedRecentEvaluation,
+    EquifaxReportModel Equifax,
+    ReniecReportModel Reniec,
+    SbsReportModel Sbs);
 
 public sealed record CustomerProfileModel(
     string Dni,
@@ -130,7 +133,18 @@ public static class CreditEvaluationMappings
             response.AmountRequested,
             response.Decision,
             response.Justification,
-            response.ReusedRecentEvaluation);
+            response.ReusedRecentEvaluation,
+            new EquifaxReportModel(
+                response.EquifaxReport.Score,
+                response.EquifaxReport.HasDelinquency,
+                response.EquifaxReport.LatePaymentsLast12Months),
+            new ReniecReportModel(
+                response.ReniecReport.IdentityValid,
+                response.ReniecReport.IsDeceased),
+            new SbsReportModel(
+                response.SbsReport.DebtToIncomeRatio,
+                response.SbsReport.ActiveCredits,
+                response.SbsReport.HasJudicialCollection));
 
     public static CustomerProfileModel ToApi(this CustomerProfileResponse response)
         => new(

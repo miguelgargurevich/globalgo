@@ -95,7 +95,10 @@ public sealed class CreditEvaluationService : ICreditEvaluationService
                 x.AmountRequested,
                 x.Decision,
                 x.Justification,
-                x.ReusedRecentEvaluation))
+                x.ReusedRecentEvaluation,
+                x.EquifaxReport,
+                x.ReniecReport,
+                x.SbsReport))
             .ToList();
     }
 

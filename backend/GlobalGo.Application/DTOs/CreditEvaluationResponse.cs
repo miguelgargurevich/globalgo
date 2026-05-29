@@ -23,7 +23,10 @@ public sealed record CustomerHistoryItemResponse(
     decimal AmountRequested,
     CreditDecisionStatus Decision,
     string Justification,
-    bool ReusedRecentEvaluation);
+    bool ReusedRecentEvaluation,
+    EquifaxReport EquifaxReport,
+    ReniecReport ReniecReport,
+    SbsReport SbsReport);
 
 public sealed record CustomerProfileResponse(
     string Dni,
