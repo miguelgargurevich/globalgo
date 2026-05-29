@@ -274,30 +274,6 @@ function App() {
                 Consola operativa para evaluar solicitudes, revisar historial por cliente y
                 monitorear riesgo agregado de cartera.
               </p>
-
-              <nav className="mt-4 flex flex-wrap gap-2">
-                {docsFiles.map((doc) => (
-                  <button
-                    key={doc.path}
-                    type="button"
-                    onClick={() => {
-                      setSelectedDoc(doc)
-                      setActiveTab('docs')
-                    }}
-                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
-                  >
-                    {doc.label}
-                  </button>
-                ))}
-                <a
-                  href={`${apiBase}/swagger/index.html`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
-                >
-                  Swagger
-                </a>
-              </nav>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
               <label className="mb-1 block font-semibold text-slate-700">API base URL</label>
@@ -708,6 +684,14 @@ function App() {
                       {doc.label}
                     </button>
                   ))}
+                  <a
+                    href={`${apiBase}/swagger/index.html`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Swagger
+                  </a>
                 </div>
               </div>
 
