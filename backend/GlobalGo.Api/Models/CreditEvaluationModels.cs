@@ -47,6 +47,12 @@ public sealed record CustomerHistoryItemModel(
     string Justification,
     bool ReusedRecentEvaluation);
 
+public sealed record CustomerProfileModel(
+    string Dni,
+    bool Exists,
+    string? FullName,
+    DateTime? LastEvaluationAtUtc);
+
 public sealed record GeneralHistoryFilterModel
 {
     public string? Dni { get; init; }
@@ -125,6 +131,13 @@ public static class CreditEvaluationMappings
             response.Decision,
             response.Justification,
             response.ReusedRecentEvaluation);
+
+    public static CustomerProfileModel ToApi(this CustomerProfileResponse response)
+        => new(
+            response.Dni,
+            response.Exists,
+            response.FullName,
+            response.LastEvaluationAtUtc);
 
     public static GeneralHistoryFilterRequest ToApplication(this GeneralHistoryFilterModel model)
         => new(

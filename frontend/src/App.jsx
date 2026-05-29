@@ -56,6 +56,8 @@ function App() {
   const [generalHistory, setGeneralHistory] = useState([])
   const [loadingGeneralHistory, setLoadingGeneralHistory] = useState(false)
   const [report, setReport] = useState(null)
+  const [loadingCustomerProfile, setLoadingCustomerProfile] = useState(false)
+  const [dniKnownCustomer, setDniKnownCustomer] = useState(null)
   const [selectedDoc, setSelectedDoc] = useState(docsFiles[0])
   const [docContent, setDocContent] = useState('')
   const [loadingDoc, setLoadingDoc] = useState(false)
@@ -92,6 +94,8 @@ function App() {
     setLoadingEvaluation(true)
 
     try {
+      await lookupCustomerProfile(form.dni)
+
       const payload = {
         dni: form.dni,
         fullName: form.fullName,
@@ -111,6 +115,42 @@ function App() {
       setError(apiError.message)
     } finally {
       setLoadingEvaluation(false)
+    }
+  }
+
+  async function lookupCustomerProfile(dniValue = form.dni) {
+    const normalizedDni = String(dniValue ?? '').trim()
+
+    if (normalizedDni.length !== 8) {
+      setDniKnownCustomer(null)
+      return null
+    }
+
+    setLoadingCustomerProfile(true)
+
+    try {
+      const profile = await callApi(`/api/customers/${normalizedDni}/profile`)
+
+      if (profile.exists && profile.fullName) {
+        setForm((current) => ({ ...current, dni: normalizedDni, fullName: profile.fullName }))
+        setDniKnownCustomer(profile)
+      } else {
+        setDniKnownCustomer({ ...profile, fullName: null })
+      }
+
+      return profile
+    } catch (apiError) {
+      setError(apiError.message)
+      return null
+    } finally {
+      setLoadingCustomerProfile(false)
+    }
+  }
+
+  function onDniKeyDown(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      lookupCustomerProfile(form.dni)
     }
   }
 
@@ -316,7 +356,12 @@ function App() {
               <Field
                 label="DNI"
                 value={form.dni}
-                onChange={(value) => setForm((current) => ({ ...current, dni: value }))}
+                onChange={(value) => {
+                  setForm((current) => ({ ...current, dni: value }))
+                  setDniKnownCustomer(null)
+                }}
+                onBlur={() => lookupCustomerProfile(form.dni)}
+                onKeyDown={onDniKeyDown}
                 placeholder="12345678"
               />
               <Field
@@ -324,7 +369,22 @@ function App() {
                 value={form.fullName}
                 onChange={(value) => setForm((current) => ({ ...current, fullName: value }))}
                 placeholder="Nombre y apellido"
+                disabled={Boolean(dniKnownCustomer?.exists)}
               />
+              <p className="text-xs text-slate-500">
+                {loadingCustomerProfile && 'Buscando DNI en la base...'}
+                {!loadingCustomerProfile && dniKnownCustomer?.exists && (
+                  <>
+                    DNI registrado: se usara el nombre existente (<strong>{dniKnownCustomer.fullName}</strong>).
+                  </>
+                )}
+                {!loadingCustomerProfile && dniKnownCustomer && !dniKnownCustomer.exists && (
+                  <>DNI nuevo: puedes ingresar el nombre para registrarlo.</>
+                )}
+                {!loadingCustomerProfile && dniKnownCustomer === null && (
+                  <>Presiona Enter en DNI o sal del campo para validar y autocompletar.</>
+                )}
+              </p>
               <Field
                 label="Monto solicitado"
                 value={form.amountRequested}
@@ -693,7 +753,7 @@ function TabButton({ active, icon: Icon, title, subtitle, onClick }) {
   )
 }
 
-function Field({ label, value, onChange, placeholder }) {
+function Field({ label, value, onChange, placeholder, disabled = false, onBlur, onKeyDown }) {
   return (
     <label className="text-sm font-semibold text-slate-700">
       {label}
@@ -701,7 +761,10 @@ function Field({ label, value, onChange, placeholder }) {
         className="mt-1 block w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 font-normal outline-none ring-teal-500 transition focus:bg-white focus:ring"
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onBlur={onBlur}
+        onKeyDown={onKeyDown}
         placeholder={placeholder}
+        disabled={disabled}
       />
     </label>
   )

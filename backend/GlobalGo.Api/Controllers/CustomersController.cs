@@ -15,6 +15,16 @@ public sealed class CustomersController : ControllerBase
         _service = service;
     }
 
+    [HttpGet("{dni}/profile")]
+    [ProducesResponseType(typeof(CustomerProfileModel), StatusCodes.Status200OK)]
+    public async Task<ActionResult<CustomerProfileModel>> GetProfile(
+        [FromRoute] string dni,
+        CancellationToken cancellationToken)
+    {
+        var result = await _service.GetCustomerProfileAsync(dni, cancellationToken);
+        return Ok(result.ToApi());
+    }
+
     [HttpGet("{dni}/history")]
     [ProducesResponseType(typeof(IReadOnlyList<CustomerHistoryItemModel>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<CustomerHistoryItemModel>>> GetHistory(

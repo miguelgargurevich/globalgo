@@ -22,6 +22,11 @@ public sealed class CreditEvaluationService : ICreditEvaluationService
 
     public async Task<CreditEvaluationResponse> EvaluateAsync(EvaluateCreditRequest request, CancellationToken cancellationToken = default)
     {
+        var customerProfile = await GetCustomerProfileAsync(request.Dni, cancellationToken);
+        var applicantFullName = customerProfile.Exists && !string.IsNullOrWhiteSpace(customerProfile.FullName)
+            ? customerProfile.FullName!
+            : request.FullName.Trim();
+
         var recentEvaluation = await _repository.GetRecentSameRequestAsync(
             request.Dni,
             request.AmountRequested,
@@ -49,8 +54,8 @@ public sealed class CreditEvaluationService : ICreditEvaluationService
 
         var evaluation = new CreditEvaluation(
             Guid.NewGuid(),
-            request.Dni, 
-            request.FullName,
+            request.Dni,
+            applicantFullName,
             request.AmountRequested,
             request.MonthlyIncome,
             DateTime.UtcNow,
@@ -64,6 +69,18 @@ public sealed class CreditEvaluationService : ICreditEvaluationService
         await _repository.AddAsync(evaluation, cancellationToken);
 
         return ToResponse(evaluation);
+    }
+
+    public async Task<CustomerProfileResponse> GetCustomerProfileAsync(string dni, CancellationToken cancellationToken = default)
+    {
+        var history = await _repository.GetByDniAsync(dni, cancellationToken);
+        var latestEvaluation = history.FirstOrDefault();
+
+        return new CustomerProfileResponse(
+            Dni: dni,
+            Exists: latestEvaluation is not null,
+            FullName: latestEvaluation?.ApplicantFullName,
+            LastEvaluationAtUtc: latestEvaluation?.CreatedAtUtc);
     }
 
     public async Task<IReadOnlyList<CustomerHistoryItemResponse>> GetCustomerHistoryAsync(string dni, CancellationToken cancellationToken = default)

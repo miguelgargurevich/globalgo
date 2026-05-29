@@ -25,6 +25,12 @@ public sealed record CustomerHistoryItemResponse(
     string Justification,
     bool ReusedRecentEvaluation);
 
+public sealed record CustomerProfileResponse(
+    string Dni,
+    bool Exists,
+    string? FullName,
+    DateTime? LastEvaluationAtUtc);
+
 public sealed record GeneralHistoryFilterRequest(
     string? Dni,
     CreditDecisionStatus? Decision,
