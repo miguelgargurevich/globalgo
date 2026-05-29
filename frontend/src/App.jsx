@@ -32,11 +32,17 @@ const defaultForm = {
   monthlyIncome: '3000',
 }
 
+const docsBaseUrl =
+  import.meta.env.VITE_DOCS_BASE_URL ??
+  'https://git.gargurevich.dev/superadmin/globalgo/src/branch/main'
+
 const resourceLinks = [
-  { label: 'README', path: '/docs/README.md' },
-  { label: 'Decisiones', path: '/docs/DECISIONES.md' },
-  { label: 'Pruebas Criterio', path: '/docs/PRUEBAS_CRITERIO_CREDITO.md' },
-  { label: 'Swagger', path: '/swagger/index.html' },
+  { label: 'README', href: `${docsBaseUrl}/README.md` },
+  { label: 'Decisiones', href: `${docsBaseUrl}/DECISIONES.md` },
+  {
+    label: 'Pruebas Criterio',
+    href: `${docsBaseUrl}/PRUEBAS_CRITERIO_CREDITO.md`,
+  },
 ]
 
 function App() {
@@ -209,8 +215,8 @@ function App() {
               <nav className="mt-4 flex flex-wrap gap-2">
                 {resourceLinks.map((link) => (
                   <a
-                    key={link.path}
-                    href={`${apiBase}${link.path}`}
+                    key={link.href}
+                    href={link.href}
                     target="_blank"
                     rel="noreferrer"
                     className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
@@ -218,6 +224,14 @@ function App() {
                     {link.label}
                   </a>
                 ))}
+                <a
+                  href={`${apiBase}/swagger/index.html`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
+                >
+                  Swagger
+                </a>
               </nav>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
