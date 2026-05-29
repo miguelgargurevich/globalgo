@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import {
   AlertTriangle,
   Bike,
@@ -10,6 +12,7 @@ import {
   Loader2,
   Search,
   ShieldCheck,
+  SquareLibrary,
   Users,
 } from 'lucide-react'
 
@@ -32,17 +35,10 @@ const defaultForm = {
   monthlyIncome: '3000',
 }
 
-const docsBaseUrl =
-  import.meta.env.VITE_DOCS_BASE_URL ??
-  'https://git.gargurevich.dev/superadmin/globalgo/src/branch/main'
-
-const resourceLinks = [
-  { label: 'README', href: `${docsBaseUrl}/README.md` },
-  { label: 'Decisiones', href: `${docsBaseUrl}/DECISIONES.md` },
-  {
-    label: 'Pruebas Criterio',
-    href: `${docsBaseUrl}/PRUEBAS_CRITERIO_CREDITO.md`,
-  },
+const docsFiles = [
+  { label: 'README', path: '/docs/README.md' },
+  { label: 'Decisiones', path: '/docs/DECISIONES.md' },
+  { label: 'Pruebas Criterio', path: '/docs/PRUEBAS_CRITERIO_CREDITO.md' },
 ]
 
 function App() {
@@ -60,6 +56,10 @@ function App() {
   const [generalHistory, setGeneralHistory] = useState([])
   const [loadingGeneralHistory, setLoadingGeneralHistory] = useState(false)
   const [report, setReport] = useState(null)
+  const [selectedDoc, setSelectedDoc] = useState(docsFiles[0])
+  const [docContent, setDocContent] = useState('')
+  const [loadingDoc, setLoadingDoc] = useState(false)
+  const [docError, setDocError] = useState('')
   const [historyFilters, setHistoryFilters] = useState({
     dni: '',
     decision: '',
@@ -187,9 +187,32 @@ function App() {
     }
   }
 
+  async function loadDoc(doc = selectedDoc) {
+    setDocError('')
+    setLoadingDoc(true)
+
+    try {
+      const response = await fetch(doc.path)
+      if (!response.ok) {
+        throw new Error(`No se pudo cargar ${doc.label}.`)
+      }
+
+      const content = await response.text()
+      setDocContent(content)
+    } catch (loadError) {
+      setDocError(loadError.message)
+      setDocContent('')
+    } finally {
+      setLoadingDoc(false)
+    }
+  }
+
   useEffect(() => {
     if (activeTab === 'history') {
       loadGeneralHistory()
+    }
+    if (activeTab === 'docs') {
+      loadDoc()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
@@ -213,16 +236,18 @@ function App() {
               </p>
 
               <nav className="mt-4 flex flex-wrap gap-2">
-                {resourceLinks.map((link) => (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    target="_blank"
-                    rel="noreferrer"
+                {docsFiles.map((doc) => (
+                  <button
+                    key={doc.path}
+                    type="button"
+                    onClick={() => {
+                      setSelectedDoc(doc)
+                      setActiveTab('docs')
+                    }}
                     className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
                   >
-                    {link.label}
-                  </a>
+                    {doc.label}
+                  </button>
                 ))}
                 <a
                   href={`${apiBase}/swagger/index.html`}
@@ -254,7 +279,7 @@ function App() {
         )}
 
         <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid gap-2 sm:grid-cols-3">
             <TabButton
               active={activeTab === 'evaluation'}
               icon={ShieldCheck}
@@ -268,6 +293,13 @@ function App() {
               title="Historial total"
               subtitle="Todas las evaluaciones con filtros"
               onClick={() => setActiveTab('history')}
+            />
+            <TabButton
+              active={activeTab === 'docs'}
+              icon={SquareLibrary}
+              title="Documentacion"
+              subtitle="Visor de markdown interno"
+              onClick={() => setActiveTab('docs')}
             />
           </div>
         </section>
@@ -589,6 +621,53 @@ function App() {
             </article>
           </section>
         )}
+
+        {activeTab === 'docs' && (
+          <section className="grid gap-6">
+            <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/40">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <h2 className="flex items-center gap-2 font-display text-2xl text-slate-900">
+                  <SquareLibrary className="text-teal-700" />
+                  Documentacion del proyecto
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {docsFiles.map((doc) => (
+                    <button
+                      key={doc.path}
+                      type="button"
+                      onClick={() => {
+                        setSelectedDoc(doc)
+                        loadDoc(doc)
+                      }}
+                      className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                        selectedDoc.path === doc.path
+                          ? 'border-teal-300 bg-teal-50 text-teal-900'
+                          : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      {doc.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {loadingDoc && (
+                <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                  <Loader2 size={16} className="animate-spin" />
+                  Cargando documento...
+                </div>
+              )}
+
+              {docError && (
+                <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                  {docError}
+                </div>
+              )}
+
+              {!loadingDoc && !docError && docContent && <MarkdownViewer content={docContent} />}
+            </article>
+          </section>
+        )}
       </div>
     </main>
   )
@@ -756,6 +835,50 @@ function Metric({ label, value }) {
     <div className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2">
       <span className="text-slate-600">{label}</span>
       <strong className="text-slate-900">{value}</strong>
+    </div>
+  )
+}
+
+function MarkdownViewer({ content }) {
+  return (
+    <div className="max-h-[70vh] overflow-auto rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm">
+      <div className="space-y-4 text-slate-800">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            h1: ({ children }) => <h1 className="text-3xl font-bold text-slate-900">{children}</h1>,
+            h2: ({ children }) => <h2 className="pt-2 text-2xl font-semibold text-slate-900">{children}</h2>,
+            h3: ({ children }) => <h3 className="pt-1 text-xl font-semibold text-slate-900">{children}</h3>,
+            p: ({ children }) => <p className="leading-relaxed text-slate-700">{children}</p>,
+            ul: ({ children }) => <ul className="list-disc space-y-1 pl-5 text-slate-700">{children}</ul>,
+            ol: ({ children }) => <ol className="list-decimal space-y-1 pl-5 text-slate-700">{children}</ol>,
+            li: ({ children }) => <li>{children}</li>,
+            code: ({ children }) => (
+              <code className="rounded bg-slate-200 px-1.5 py-0.5 text-xs text-slate-900">{children}</code>
+            ),
+            pre: ({ children }) => (
+              <pre className="overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs text-slate-100">{children}</pre>
+            ),
+            table: ({ children }) => (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-slate-300 text-left text-xs">{children}</table>
+              </div>
+            ),
+            th: ({ children }) => <th className="border border-slate-300 bg-slate-200 px-2 py-1.5">{children}</th>,
+            td: ({ children }) => <td className="border border-slate-300 bg-white px-2 py-1.5">{children}</td>,
+            blockquote: ({ children }) => (
+              <blockquote className="border-l-4 border-teal-400 bg-teal-50 px-3 py-2 text-slate-700">{children}</blockquote>
+            ),
+            a: ({ href, children }) => (
+              <a href={href} target="_blank" rel="noreferrer" className="font-semibold text-teal-700 underline">
+                {children}
+              </a>
+            ),
+          }}
+        >
+          {content}
+        </ReactMarkdown>
+      </div>
     </div>
   )
 }
