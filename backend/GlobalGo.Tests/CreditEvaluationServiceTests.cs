@@ -38,6 +38,20 @@ public sealed class CreditEvaluationServiceTests
     }
 
     [Fact]
+    public async Task EvaluateAsync_ShouldReject_WhenHighRiskSignalsDetected()
+    {
+        var service = BuildService(
+            new StubSourceProvider(CreditSourceCodes.Equifax, new EquifaxReport(480, true, 4)),
+            new StubSourceProvider(CreditSourceCodes.Reniec, new ReniecReport(true, false)),
+            new StubSourceProvider(CreditSourceCodes.Sbs, new SbsReport(0.75m, 3, true)));
+
+        var request = BuildRequest();
+        var result = await service.EvaluateAsync(request);
+
+        Assert.Equal(CreditDecisionStatus.Rejected, result.Decision);
+    }
+
+    [Fact]
     public async Task EvaluateAsync_ShouldObserve_WhenProfileIsIntermediate()
     {
         var service = BuildService(

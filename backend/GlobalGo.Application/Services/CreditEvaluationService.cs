@@ -174,23 +174,19 @@ public sealed class CreditEvaluationService : ICreditEvaluationService
         ReniecReport reniec,
         SbsReport sbs)
     {
-        if (!reniec.IdentityValid || reniec.IsDeceased)
+        var context = new CreditDecisionContext(amountRequested, monthlyIncome, equifax, reniec, sbs);
+
+        if (CreditDecisionSpecifications.IdentityRejected.IsSatisfiedBy(context))
         {
             return (CreditDecisionStatus.Rejected, "RENIEC indica identidad no válida o persona fallecida.");
         }
 
-        var installmentPressure = monthlyIncome == 0 ? decimal.MaxValue : amountRequested / monthlyIncome;
-
-        if (sbs.HasJudicialCollection || sbs.DebtToIncomeRatio > 0.70m || equifax.Score < 500)
+        if (CreditDecisionSpecifications.HighRiskRejected.IsSatisfiedBy(context))
         {
             return (CreditDecisionStatus.Rejected, "Riesgo alto por score bajo, sobreendeudamiento o cobranza judicial.");
         }
 
-        if (equifax.Score >= 700
-            && !equifax.HasDelinquency
-            && sbs.DebtToIncomeRatio <= 0.40m
-            && sbs.ActiveCredits <= 1
-            && installmentPressure <= 0.80m)
+        if (CreditDecisionSpecifications.AutoApproved.IsSatisfiedBy(context))
         {
             return (CreditDecisionStatus.Approved, "Perfil de riesgo saludable para aprobación automática.");
         }
