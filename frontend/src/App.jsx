@@ -110,7 +110,12 @@ function App() {
       })
 
       setEvaluation(data)
-      await Promise.all([loadHistory(form.dni), loadReport()])
+
+      // Refresca tarjetas dependientes luego de evaluar.
+      await Promise.allSettled([
+        loadHistory(data.dni ?? form.dni),
+        loadReport(),
+      ])
     } catch (apiError) {
       setError(apiError.message)
     } finally {
