@@ -29,7 +29,7 @@ const defaultForm = {
 function App() {
   const [activeTab, setActiveTab] = useState('evaluation')
   const [apiBase, setApiBase] = useState(
-    import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5015',
+    import.meta.env.VITE_API_BASE_URL ?? window.location.origin,
   )
   const [form, setForm] = useState(defaultForm)
   const [loadingEvaluation, setLoadingEvaluation] = useState(false)
