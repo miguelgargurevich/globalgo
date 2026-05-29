@@ -1,0 +1,12 @@
+{
+  "name": "globalgo",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "docker compose up -d && concurrently -n backend,frontend -c cyan,magenta \"dotnet run --project backend/GlobalGo.Api\" \"npm --prefix frontend run dev\"",
+    "down": "docker compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

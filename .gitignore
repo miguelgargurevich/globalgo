@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.coolify.example
+
+node_modules/
+frontend/node_modules/
+
+backend/**/bin/
+backend/**/obj/
+
+.DS_Store
