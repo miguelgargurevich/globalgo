@@ -492,38 +492,50 @@ function App() {
                   Sin evaluaciones para este DNI.
                 </p>
               )}
-              {history.map((item) => (
-                <div key={item.evaluationId} className="rounded-xl border border-slate-200 p-3 text-sm">
-                  <p className="font-semibold text-slate-900">
-                    {item.decision} {item.reusedRecentEvaluation ? '(Reusada)' : '(Nueva)'}
-                  </p>
-                  <p className="text-slate-600">Monto: S/ {item.amountRequested}</p>
-                  <p className="text-slate-600">Fecha: {new Date(item.createdAtUtc).toLocaleString()}</p>
-                  <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                    <BureauCard
-                      title="Equifax"
-                      lines={[
-                        `Score: ${item.equifax?.score}`,
-                        `Mora: ${item.equifax?.hasDelinquency ? 'Si' : 'No'}`,
-                      ]}
-                    />
-                    <BureauCard
-                      title="RENIEC"
-                      lines={[
-                        `Identidad valida: ${item.reniec?.identityValid ? 'Si' : 'No'}`,
-                        `Fallecido: ${item.reniec?.isDeceased ? 'Si' : 'No'}`,
-                      ]}
-                    />
-                    <BureauCard
-                      title="SBS"
-                      lines={[
-                        `Debt/Income: ${item.sbs?.debtToIncomeRatio}`,
-                        `Creditos activos: ${item.sbs?.activeCredits}`,
-                      ]}
-                    />
+              {history.map((item) => {
+                const equifax = item.equifax ?? item.equifaxReport
+                const reniec = item.reniec ?? item.reniecReport
+                const sbs = item.sbs ?? item.sbsReport
+
+                return (
+                  <div key={item.evaluationId} className="rounded-xl border border-slate-200 p-3 text-sm">
+                    <p className="font-semibold text-slate-900">
+                      {item.decision} {item.reusedRecentEvaluation ? '(Reusada)' : '(Nueva)'}
+                    </p>
+                    <p className="text-slate-600">Monto: S/ {item.amountRequested}</p>
+                    <p className="text-slate-600">Fecha: {new Date(item.createdAtUtc).toLocaleString()}</p>
+
+                    <details className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-2">
+                      <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-slate-600">
+                        Ver detalle de buros
+                      </summary>
+                      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                        <BureauCard
+                          title="Equifax"
+                          lines={[
+                            `Score: ${equifax?.score}`,
+                            `Mora: ${equifax?.hasDelinquency ? 'Si' : 'No'}`,
+                          ]}
+                        />
+                        <BureauCard
+                          title="RENIEC"
+                          lines={[
+                            `Identidad valida: ${reniec?.identityValid ? 'Si' : 'No'}`,
+                            `Fallecido: ${reniec?.isDeceased ? 'Si' : 'No'}`,
+                          ]}
+                        />
+                        <BureauCard
+                          title="SBS"
+                          lines={[
+                            `Debt/Income: ${sbs?.debtToIncomeRatio}`,
+                            `Creditos activos: ${sbs?.activeCredits}`,
+                          ]}
+                        />
+                      </div>
+                    </details>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </article>
 
