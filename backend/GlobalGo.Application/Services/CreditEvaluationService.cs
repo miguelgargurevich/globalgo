@@ -1,5 +1,6 @@
 using GlobalGo.Application.DTOs;
 using GlobalGo.Application.Interfaces;
+using GlobalGo.Application.Specifications;
 using GlobalGo.Domain.Entities;
 using GlobalGo.Domain.Enums;
 
@@ -108,37 +109,8 @@ public sealed class CreditEvaluationService : ICreditEvaluationService
     {
         var history = await _repository.GetAllAsync(cancellationToken);
 
-        var query = history.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(filter.Dni))
-        {
-            query = query.Where(x => x.ApplicantDni.Contains(filter.Dni.Trim(), StringComparison.OrdinalIgnoreCase));
-        }
-
-        if (filter.Decision is not null)
-        {
-            query = query.Where(x => x.Decision == filter.Decision);
-        }
-
-        if (filter.FromUtc is not null)
-        {
-            query = query.Where(x => x.CreatedAtUtc >= filter.FromUtc.Value);
-        }
-
-        if (filter.ToUtc is not null)
-        {
-            query = query.Where(x => x.CreatedAtUtc <= filter.ToUtc.Value);
-        }
-
-        if (filter.MinAmount is not null)
-        {
-            query = query.Where(x => x.AmountRequested >= filter.MinAmount.Value);
-        }
-
-        if (filter.MaxAmount is not null)
-        {
-            query = query.Where(x => x.AmountRequested <= filter.MaxAmount.Value);
-        }
+        var specification = CreditEvaluationHistorySpecifications.Build(filter);
+        var query = history.Where(specification.IsSatisfiedBy);
 
         return query
             .OrderByDescending(x => x.CreatedAtUtc)
