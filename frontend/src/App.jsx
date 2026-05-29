@@ -32,6 +32,13 @@ const defaultForm = {
   monthlyIncome: '3000',
 }
 
+const resourceLinks = [
+  { label: 'README', path: '/docs/README.md' },
+  { label: 'Decisiones', path: '/docs/DECISIONES.md' },
+  { label: 'Pruebas Criterio', path: '/docs/PRUEBAS_CRITERIO_CREDITO.md' },
+  { label: 'Swagger', path: '/swagger/index.html' },
+]
+
 function App() {
   const [activeTab, setActiveTab] = useState('evaluation')
   const [apiBase, setApiBase] = useState(
@@ -198,6 +205,20 @@ function App() {
                 Consola operativa para evaluar solicitudes, revisar historial por cliente y
                 monitorear riesgo agregado de cartera.
               </p>
+
+              <nav className="mt-4 flex flex-wrap gap-2">
+                {resourceLinks.map((link) => (
+                  <a
+                    key={link.path}
+                    href={`${apiBase}${link.path}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </nav>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
               <label className="mb-1 block font-semibold text-slate-700">API base URL</label>

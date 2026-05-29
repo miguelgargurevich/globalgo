@@ -58,7 +58,59 @@ Notas rapidas:
 - Los DNIs `10000008`, `10000026` y `10000044` rechazan por RENIEC.
 - Los demas DNIs de `Rejected` rechazan por riesgo alto.
 
-La tabla QA anterior es la fuente única de casos recomendados para `Approved`, `Observed` y `Rejected`.
+### 3.1 Casos APPROVED
+
+Usar:
+- `AmountRequested`: `2400`
+- `MonthlyIncome`: `4000`
+
+DNIs validados (todos retornan `Approved`):
+- `10000012`
+- `10000013`
+- `10000018`
+- `10000019`
+- `10000102`
+- `10000103`
+- `10000108`
+- `10000109`
+- `10000120`
+- `10000121`
+
+### 3.2 Casos OBSERVED
+
+Usar:
+- `AmountRequested`: `3500`
+- `MonthlyIncome`: `4000`
+
+DNIs validados (todos retornan `Observed`):
+- `10000000`
+- `10000001`
+- `10000002`
+- `10000003`
+- `10000004`
+- `10000005`
+- `10000006`
+- `10000007`
+- `10000009`
+- `10000010`
+
+### 3.3 Casos REJECTED
+
+Usar:
+- `AmountRequested`: `2400`
+- `MonthlyIncome`: `4000`
+
+DNIs validados (todos retornan `Rejected`):
+- `10000008` (rechazo por RENIEC)
+- `10000020` (rechazo por riesgo alto)
+- `10000021` (rechazo por riesgo alto)
+- `10000022` (rechazo por riesgo alto)
+- `10000023` (rechazo por riesgo alto)
+- `10000024` (rechazo por riesgo alto)
+- `10000025` (rechazo por riesgo alto)
+- `10000026` (rechazo por RENIEC)
+- `10000044` (rechazo por RENIEC)
+- `10000050` (rechazo por riesgo alto)
 
 ## 4) Payload de ejemplo
 
