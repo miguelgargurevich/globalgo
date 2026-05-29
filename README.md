@@ -194,7 +194,10 @@ Notas:
 - La API tiene CORS habilitado para `http://localhost:5173`.
 - Los enums de backend se serializan como texto (`Approved`, `Observed`, `Rejected`).
 - El esquema de BD se inicializa al arrancar la API usando `EnsureCreated`.
-- Patrón aplicado: Strategy + Provider Pipeline con `ICreditSourceProvider` para incorporar nuevas fuentes sin cambiar la orquestación principal.
+- Patrones aplicados:
+  - Strategy + Provider Pipeline con `ICreditSourceProvider` para incorporar nuevas fuentes sin cambiar la orquestación principal.
+  - Specification para encapsular reglas de decision y filtros de historial (`ISpecification<T>`, `CreditDecisionSpecifications`, `CreditEvaluationHistorySpecifications`).
+  - Repository para desacoplar Application de la persistencia e integraciones (`ICreditEvaluationRepository` + implementación en Infrastructure).
 - Las fuentes externas estan simuladas y se consultan en paralelo.
 - La simulacion de burós incluye latencia variable, fallos transitorios controlados y reintentos automáticos.
 - Parametros configurables en `appsettings`: `BureauApiSimulation:MinLatencyMs`, `MaxLatencyMs`, `MaxRetries`, `RetryBaseDelayMs`.

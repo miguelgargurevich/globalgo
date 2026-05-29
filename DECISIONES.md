@@ -24,7 +24,10 @@ Si mismo DNI solicita el mismo monto dentro de 24 horas, se reutiliza la última
 - `Application`: casos de uso, DTOs, interfaces.
 - `Domain`: entidades y enums de negocio.
 - `Infrastructure`: proveedores de burós y persistencia.
-- Patrón aplicado: Strategy + Provider Pipeline con `ICreditSourceProvider` para incorporar nuevas fuentes sin cambiar la orquestación principal.
+- Patrones aplicados:
+	- Strategy + Provider Pipeline con `ICreditSourceProvider` para incorporar nuevas fuentes sin cambiar la orquestación principal.
+	- Specification para componer criterios de negocio reutilizables (filtros de historial y motor de decision).
+	- Repository para desacoplar casos de uso de la persistencia concreta de PostgreSQL y de las fuentes externas.
 - Simulación de integración externa más realista: latencia variable, fallos transitorios y reintentos configurables en infraestructura.
 
 ## Persistencia
