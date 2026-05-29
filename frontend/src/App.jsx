@@ -19,6 +19,12 @@ const decisionStyles = {
   Rejected: 'bg-rose-100 text-rose-800 border-rose-200',
 }
 
+const decisionChartPalette = {
+  Approved: '#10b981',
+  Observed: '#f59e0b',
+  Rejected: '#f43f5e',
+}
+
 const defaultForm = {
   dni: '12345678',
   fullName: 'Juan Perez',
@@ -416,22 +422,10 @@ function App() {
             {report && (
               <div className="space-y-3 text-sm">
                 <Metric label="Total evaluaciones" value={report.totalEvaluations} />
-                <Metric label="Monto total" value={`S/ ${report.totalAmountEvaluated}`} />
-                <Metric label="Ticket promedio" value={`S/ ${report.averageAmount}`} />
+                <Metric label="Monto total" value={formatCurrency(report.totalAmountEvaluated)} />
+                <Metric label="Ticket promedio" value={formatCurrency(report.averageAmount)} />
                 <Metric label="Tasa rechazo" value={`${report.rejectionRate}%`} />
-                <div>
-                  <p className="mb-2 font-semibold text-slate-700">Distribucion por estado</p>
-                  <div className="space-y-2">
-                    {(report.distributionByState ?? []).map((item) => (
-                      <div key={item.status} className="rounded-xl border border-slate-200 p-3">
-                        <p className="font-semibold text-slate-900">{item.status}</p>
-                        <p className="text-slate-600">
-                          {item.count} casos - S/ {item.totalAmount} - {item.percentage}%
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <DistributionChart items={report.distributionByState ?? []} />
               </div>
             )}
           </article>
@@ -610,6 +604,116 @@ function BureauCard({ title, lines }) {
       ))}
     </div>
   )
+}
+
+function DistributionChart({ items }) {
+  const statusOrder = ['Approved', 'Observed', 'Rejected']
+  const [mode, setMode] = useState('cases')
+
+  const baseItems = statusOrder.map((status) => {
+    const source = items.find((item) => item.status === status)
+    return {
+      status,
+      count: source?.count ?? 0,
+      totalAmount: source?.totalAmount ?? 0,
+      casePercentage: Number(source?.percentage ?? 0),
+      color: decisionChartPalette[status],
+    }
+  })
+
+  const totalCases = baseItems.reduce((acc, item) => acc + item.count, 0)
+  const totalAmount = baseItems.reduce((acc, item) => acc + item.totalAmount, 0)
+
+  const normalized = baseItems.map((item) => ({
+    ...item,
+    amountPercentage: totalAmount === 0 ? 0 : (item.totalAmount * 100) / totalAmount,
+  }))
+
+  const getPercentage = (item) => (mode === 'cases' ? item.casePercentage : item.amountPercentage)
+
+  let cumulative = 0
+  const segments = normalized
+    .map((item) => {
+      const start = cumulative
+      const end = start + getPercentage(item)
+      cumulative = end
+      return `${item.color} ${start}% ${end}%`
+    })
+    .join(', ')
+
+  const pieBackground = (mode === 'cases' ? totalCases : totalAmount)
+    ? `conic-gradient(${segments})`
+    : 'conic-gradient(#e2e8f0 0% 100%)'
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="font-semibold text-slate-700">Distribucion por estado</p>
+        <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1 text-xs font-semibold">
+          <button
+            type="button"
+            onClick={() => setMode('cases')}
+            className={`rounded-md px-2.5 py-1 transition ${
+              mode === 'cases' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            Por casos
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('amount')}
+            className={`rounded-md px-2.5 py-1 transition ${
+              mode === 'amount' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            Por monto
+          </button>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-[180px_1fr] md:items-center">
+        <div className="mx-auto flex h-40 w-40 items-center justify-center rounded-full" style={{ background: pieBackground }}>
+          <div className="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-white text-center shadow-sm">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Total</span>
+            <span className="text-xl font-bold text-slate-900">
+              {mode === 'cases' ? totalCases : formatCurrency(totalAmount)}
+            </span>
+            <span className="text-[10px] text-slate-500">{mode === 'cases' ? 'casos' : 'monto'}</span>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {normalized.map((item) => (
+            <div key={item.status} className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="flex items-center gap-2 font-semibold text-slate-900">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                  {item.status}
+                </p>
+                <p className="text-xs font-semibold text-slate-600">{getPercentage(item).toFixed(2)}%</p>
+              </div>
+
+              <div className="mb-2 h-2 rounded-full bg-slate-100">
+                <div
+                  className="h-2 rounded-full transition-all"
+                  style={{ width: `${Math.max(0, Math.min(100, getPercentage(item)))}%`, backgroundColor: item.color }}
+                />
+              </div>
+
+              <p className="text-xs text-slate-600">
+                {item.count} casos - {formatCurrency(item.totalAmount)}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function formatCurrency(value) {
+  const numeric = Number(value ?? 0)
+  return `S/ ${new Intl.NumberFormat('es-PE', { maximumFractionDigits: 2 }).format(numeric)}`
 }
 
 function Metric({ label, value }) {

@@ -19,6 +19,8 @@ Backend y frontend para el proceso de evaluacion crediticia de GlobalGo.
   - resumen de decisiones tecnicas
 - `PRUEBAS_UI.md`
   - ejecucion de pruebas funcionales desde la interfaz y hallazgos
+- `PRUEBAS_CRITERIO_CREDITO.md`
+  - criterio del motor de decision y casos de prueba validados (Approved/Observed/Rejected)
 
 ## Stack tecnico
 
@@ -92,6 +94,60 @@ npm run dev
 - `POST /api/credit-evaluations`
 - `GET /api/customers/{dni}/history`
 - `GET /api/portfolio-risk/report`
+
+## Swagger (OpenAPI)
+
+- Local: `http://localhost:5015/swagger`
+- Producción: `https://globalgo.gargurevich.dev/swagger`
+
+Con Swagger puedes:
+
+- revisar todos los endpoints y modelos de request/response,
+- ejecutar pruebas directas desde el navegador,
+- validar rápidamente cambios en contratos HTTP.
+
+### Ejemplos rapidos (copiar/pegar)
+
+> En local usa `http://localhost:5015` y en producción `https://globalgo.gargurevich.dev`.
+
+Evaluar solicitud de credito:
+
+```bash
+curl -sS -H 'Content-Type: application/json' \
+  -d '{"Dni":"10000012","FullName":"Demo Approved","AmountRequested":2400,"MonthlyIncome":4000}' \
+  http://localhost:5015/api/credit-evaluations
+```
+
+Historial por DNI:
+
+```bash
+curl -sS \
+  'http://localhost:5015/api/customers/10000012/history'
+```
+
+Reporte de riesgo de cartera:
+
+```bash
+curl -sS \
+  'http://localhost:5015/api/portfolio-risk/report'
+```
+
+## Documentacion de pruebas
+
+- Casos de prueba y criterio de evaluacion: `PRUEBAS_CRITERIO_CREDITO.md`
+- Pruebas funcionales UI: `PRUEBAS_UI.md`
+
+### Quick QA Matrix
+
+| Estado esperado | AmountRequested | MonthlyIncome | DNIs de prueba |
+| --- | ---: | ---: | --- |
+| Approved | 2400 | 4000 | 10000012, 10000013, 10000018, 10000019, 10000102, 10000103, 10000108, 10000109, 10000120, 10000121 |
+| Observed | 3500 | 4000 | 10000000, 10000001, 10000002, 10000003, 10000004, 10000005, 10000006, 10000007, 10000009, 10000010 |
+| Rejected | 2400 | 4000 | 10000008, 10000020, 10000021, 10000022, 10000023, 10000024, 10000025, 10000026, 10000044, 10000050 |
+
+Notas:
+- Rechazo por RENIEC: `10000008`, `10000026`, `10000044`.
+- Rechazo por riesgo alto: resto de DNIs en `Rejected`.
 
 ## Notas de integracion
 

@@ -44,6 +44,7 @@ PostgreSQL con EF Core (`PostgresCreditEvaluationRepository`). El esquema se ini
 - Motor de reglas configurable/versionado.
 - Circuit breaker y políticas por fuente (la simulación ya incluye retries y latencia).
 - Seguridad y auditoría (autenticación, autorización, trazabilidad).
+- Integración formal con gestor de secretos (Key Vault/Vault) + rotación automatizada.
 - Tests de integración y contract tests.
 - Pipeline CI/CD con contenedores.
 
@@ -53,6 +54,37 @@ PostgreSQL con EF Core (`PostgresCreditEvaluationRepository`). El esquema se ini
 - Gestión segura de datos sensibles (masking/encriptación/control de acceso).
 - Feature flags para reglas de riesgo.
 - Gobierno y monitoreo de performance del modelo de decisión.
+
+## Seguridad y secretos (prioridad alta)
+
+### 1) Secretos fuera de `.env` en repositorio
+
+- No almacenar credenciales reales en archivos versionados.
+- Mantener solo plantillas (`.env.example`) sin valores sensibles.
+- Inyectar secretos en runtime/build desde un gestor de secretos (por ejemplo: Azure Key Vault, HashiCorp Vault, AWS Secrets Manager, Doppler, 1Password Secrets Automation).
+
+### 2) Estrategia recomendada para este proyecto
+
+- Backend:
+	- Cargar cadena de conexión y tokens desde proveedor de secretos.
+	- No registrar secretos en logs.
+- Frontend:
+	- Nunca exponer secretos en variables `VITE_*`.
+	- Solo valores públicos/configurables de cliente.
+
+### 3) Controles mínimos de hardening
+
+- CORS restrictivo por dominio exacto.
+- Principio de mínimo privilegio para usuarios de base de datos.
+- Política de backups y prueba periódica de restore.
+- Escaneo de secretos en CI/CD antes de merge/deploy.
+
+### 4) Auditoría y cumplimiento operativo
+
+- Auditoría de evaluaciones: quién consultó, qué cambió y cuándo.
+- Trazabilidad de decisiones por `evaluationId` y correlación de logs.
+- Redacción/masking de PII (DNI, nombre) en logs técnicos.
+- Política de retención y borrado de datos acorde a normativa.
 
 ## Herramientas utilizadas
 
