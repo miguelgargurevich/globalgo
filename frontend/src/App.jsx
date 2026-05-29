@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import {
@@ -40,6 +40,29 @@ const docsFiles = [
   { label: 'Decisiones', path: '/docs/DECISIONES.md' },
   { label: 'Pruebas Criterio', path: '/docs/PRUEBAS_CRITERIO_CREDITO.md' },
 ]
+
+let mermaidInitialized = false
+let mermaidModulePromise = null
+
+async function getMermaid() {
+  if (!mermaidModulePromise) {
+    mermaidModulePromise = import('mermaid').then(({ default: mermaid }) => {
+      if (!mermaidInitialized) {
+        mermaid.initialize({
+          startOnLoad: false,
+          securityLevel: 'loose',
+          theme: 'neutral',
+        })
+
+        mermaidInitialized = true
+      }
+
+      return mermaid
+    })
+  }
+
+  return mermaidModulePromise
+}
 
 function App() {
   const [activeTab, setActiveTab] = useState('evaluation')
@@ -926,6 +949,58 @@ function Metric({ label, value }) {
   )
 }
 
+function MermaidDiagram({ chart }) {
+  const containerRef = useRef(null)
+  const [renderError, setRenderError] = useState('')
+
+  useEffect(() => {
+    let isActive = true
+
+    async function renderDiagram() {
+      if (!containerRef.current) {
+        return
+      }
+
+      setRenderError('')
+
+      try {
+        const mermaid = await getMermaid()
+        const renderId = `mermaid-${Math.random().toString(36).slice(2)}`
+        const { svg } = await mermaid.render(renderId, chart)
+
+        if (isActive && containerRef.current) {
+          containerRef.current.innerHTML = svg
+        }
+      } catch (error) {
+        if (!isActive) {
+          return
+        }
+
+        containerRef.current.innerHTML = ''
+        setRenderError('No se pudo renderizar el diagrama Mermaid.')
+      }
+    }
+
+    renderDiagram()
+
+    return () => {
+      isActive = false
+      if (containerRef.current) {
+        containerRef.current.innerHTML = ''
+      }
+    }
+  }, [chart])
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      {renderError && (
+        <p className="mb-3 text-sm font-semibold text-rose-700">{renderError}</p>
+      )}
+      <div ref={containerRef} className="overflow-x-auto text-center" />
+    </div>
+  )
+}
+
 function MarkdownViewer({ content }) {
   return (
     <div className="max-h-[70vh] overflow-auto rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm">
@@ -940,12 +1015,25 @@ function MarkdownViewer({ content }) {
             ul: ({ children }) => <ul className="list-disc space-y-1 pl-5 text-slate-700">{children}</ul>,
             ol: ({ children }) => <ol className="list-decimal space-y-1 pl-5 text-slate-700">{children}</ol>,
             li: ({ children }) => <li>{children}</li>,
-            code: ({ children }) => (
-              <code className="rounded bg-slate-200 px-1.5 py-0.5 text-xs text-slate-900">{children}</code>
-            ),
-            pre: ({ children }) => (
-              <pre className="overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs text-slate-100">{children}</pre>
-            ),
+            code: ({ inline, className, children }) => {
+              const language = className?.replace('language-', '')
+              const value = String(children).replace(/\n$/, '')
+
+              if (!inline && language === 'mermaid') {
+                return <MermaidDiagram chart={value} />
+              }
+
+              if (inline) {
+                return <code className="rounded bg-slate-200 px-1.5 py-0.5 text-xs text-slate-900">{children}</code>
+              }
+
+              return (
+                <pre className="overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs text-slate-100">
+                  <code>{children}</code>
+                </pre>
+              )
+            },
+            pre: ({ children }) => <>{children}</>,
             table: ({ children }) => (
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-slate-300 text-left text-xs">{children}</table>
