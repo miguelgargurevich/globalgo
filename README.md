@@ -35,6 +35,42 @@ Backend y frontend para el proceso de evaluacion crediticia de GlobalGo.
 - React + Vite + Tailwind + Lucide React
 - Docker Compose
 
+## Diagrama de arquitectura
+
+```mermaid
+flowchart LR
+    U[Usuario] --> FE[Frontend React + Vite + Tailwind]
+    FE -->|HTTPS /api y /swagger| NGINX[Nginx Frontend Proxy]
+    NGINX --> API[ASP.NET Core API .NET 8]
+
+    subgraph Backend[Backend Clean Architecture]
+      API --> APP[Application Layer<br/>Use Cases + DTOs + Specifications]
+      APP --> DOM[Domain Layer<br/>Entidades + Reglas]
+      APP --> INF[Infrastructure Layer<br/>Repositorios + Integraciones]
+    end
+
+    INF --> DB[(PostgreSQL)]
+    INF --> EQ[Proveedor Equifax Simulado]
+    INF --> RE[Proveedor RENIEC Simulado]
+    INF --> SBS[Proveedor SBS Simulado]
+
+    EQ --> GATE[Simulated Bureau API Gateway<br/>latencia + retries]
+    RE --> GATE
+    SBS --> GATE
+
+    subgraph Deploy[Despliegue]
+      COOLIFY[Coolify] --> STACK[docker-compose]
+      STACK --> NGINX
+      STACK --> API
+      STACK --> DB
+    end
+
+    subgraph SCM[Control de Codigo]
+      GITEA[Gitea] -->|Webhook| COOLIFY
+      GITHUB[GitHub Public Repo]
+    end
+```
+
 ## Ejecucion rapida (un solo comando)
 
 Desde la raiz:
